@@ -1,5 +1,30 @@
-= Redmine
-
-Redmine is a flexible project management web application written using Ruby on Rails framework.
-
-More details can be found in the doc directory or on the official website http://www.redmine.org
+HowTo Install Redmine on Heroku
+Install Redmine locally
+git clone git://github.com/redmine/redmine.git
+cd redmine
+git checkout 1.4-stable
+cp config/database.yml.example config/database.yml
+# edit config/database.yml
+bundle install
+rake config/initializers/session_store.rb
+create an Heroku app
+heroku create
+remove from .gitignore these lines
+/config/initializers/session_store.rb
+/public/plugin_assets
+/Gemfile.lock
+/Gemfile.local
+configure heroku to run bundle install without sqlite group, otherwise it will fail
+heroku config:add BUNDLE_WITHOUT="sqlite" 
+seems that Heroku cedar stack still doesn't support BUNDLE_WITHOUT so we have to comment sqlite groups on Gemfile
+# edit Gemfile, comment sqlite groups
+bundle install
+git add Gemfile Gemfile.lock
+git commit -m "remove sqlite gem from bundle" 
+commit changes and push to Heroku
+git add -A
+git commit -m "changes for heroku" 
+git push heroku 1.4-stable:master
+migrate and populate database
+heroku run rake db:migrate
+heroku run rake redmine:load_default_data
